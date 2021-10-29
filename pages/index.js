@@ -2,22 +2,21 @@ import Head from "next/head";
 import { Heading, Link, Text, Code, Flex, Box, Button } from "@chakra-ui/react";
 import { useEffect } from "react";
 import styles from "../styles/Home.module.css";
-import { use } from "chai";
-
+const Web3 = require("web3");
+import { abi } from "../abi";
+import { bytecode } from "../bytecode";
+import { useState } from "react";
 export default function Home() {
+  const [deployed, setDeployed] = useState(false);
+
   useEffect(() => {
+    var web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
+
     var account = null;
     async function getAccounts() {
       if (window.ethereum) {
         await window.ethereum.send("eth_requestAccounts");
-        if (typeof web3 !== "undefined") {
-          web3 = new Web3(web3.currentProvider);
-        } else {
-          // set the provider you want from Web3.providers
-          web3 = new Web3(
-            new Web3.providers.HttpProvider("http://localhost:8545")
-          );
-        }
+        window.web3 = new Web3(window.ethereum);
       }
       var accounts = await web3.eth.getAccounts();
       account = accounts[0];
@@ -38,7 +37,9 @@ export default function Home() {
       console.log(deployedContract.options.address);
       return deployedContract.options.address;
     };
-  }, []);
+    console.log(abi, bytecode);
+    deploy(abi, bytecode);
+  }, [deployed]);
 
   return (
     <div className={styles.container}>
@@ -51,8 +52,8 @@ export default function Home() {
         <Flex>
           <Button
             colorScheme="blue"
-            onClick={async () => {
-              await deploy(process.env.ABI, process.env.BYTECODE);
+            onClick={() => {
+              setDeployed(true);
             }}
           >
             Conncect Wallet
